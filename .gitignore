@@ -1,0 +1,32 @@
+# Binarios de compilacion
+*.o
+stockfish.exe
+
+# Backups
+*.bak
+*.bak*
+
+# Logs y resultados de matches
+*.log
+*.csv
+
+# Herramientas y datasets de terceros
+fastchess.exe
+wacnew.epd
+book.epd
+
+# Redes neuronales (excepto la que esta en release/)
+*.nnue
+!release/*.nnue
+
+# Archivos de build
+.build_date.txt
+.build_diffindex.txt
+.build_sha.txt
+.depend
+config.json
+
+# Herramientas temporales
+fastchess.zip
+style.cpp.actual_pos
+test_tactico.sh
