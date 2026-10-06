@@ -7,21 +7,21 @@ Fecha de inicio de desarrollo: Octubre 2026
 
 ---
 
-## 🎯 Configuración del motor
+## Configuración del motor
 
 ### Opciones UCI propias de Evolution
 
 | Opción | Tipo | Rango | Default | Descripción |
 |--------|------|-------|---------|-------------|
-| `Style` | string | Killer, Balanced, Positional, Pure | Balanced | Selecciona el estilo de juego |
-| `TacticalScale` | spin | 1-3 | 2 | Escala de agresividad de Killer |
+| `Style` | string | Killer, Balanced, Positional | Balanced | Selecciona el estilo de juego |
+| `KillerScale` | spin | 1-3 | 2 | Escala de agresividad de Killer |
+| `PositionalMode` | string | Dynamic, Prophylactic, Constrictor | Dynamic | Modo del estilo Positional |
 
 ### Significado de cada estilo
 
-- **Pure**: Delta de estilo = 0. Comportamiento idéntico a Stockfish 19 original.
-- **Balanced**: Ajustes sutiles con personalidad propia. Punto medio.
 - **Killer**: Estilo agresivo con tropismo al rey enemigo.
-- **Positional**: Estilo estratégico basado en estructura y caballos.
+- **Balanced**: Estilo equilibrado con personalidad sutil propia (default).
+- **Positional**: Estilo estratégico, posicional-dinámico, no materialista.
 
 ### Significado de cada escala táctica
 
@@ -29,66 +29,95 @@ Fecha de inicio de desarrollo: Octubre 2026
 - **2 (Medium)**: Killer equilibrado (default).
 - **3 (Berserker)**: Killer agresivo máximo.
 
+### Significado de cada modo posicional
+
+- **Dynamic**: Modo equilibrado con personalidad propia (default).
+- **Prophylactic**: Modo preventivo y solido, neutraliza las ideas del rival.
+- **Constrictor**: Modo de presion sostenida y restriccion progresiva.
+
 ---
 
-## 📊 Validación de fuerza — Matches vs Stockfish puro
+## Validación de fuerza — Matches vs Stockfish 19 original
 
 Formato: 5+0.05 seg, 1 thread, 16 MB hash, libro EPD de 20 aperturas.
 
-### Killer vs Pure
+### Killer vs Stockfish original
 
-| Partidas | Elo (Pure vs Killer) | Margen | Notas |
-|----------|---------------------|--------|-------|
+| Partidas | Elo (Stockfish vs Killer) | Margen | Notas |
+|----------|---------------------------|--------|-------|
 | 20 | -17.39 | ±58.68 | Muestra inicial |
 | 100 (con fix de mates) | -3.47 | ±28.12 | Primera señal sólida |
 | **400 (Killer suave, calibrado)** | **+4.34** | **±10.62** | **Validación definitiva** |
 
-**Conclusión:** Killer está a ~4 Elo de Stockfish puro. Estadísticamente indistinguible.
+**Conclusión:** Killer está a ~4 Elo de Stockfish 19 original. Estadísticamente indistinguible.
 
-### Balanced vs Pure
+### Balanced vs Stockfish original
 
 | Partidas | Elo | Margen | Notas |
 |----------|-----|--------|-------|
 | 20 | 0.00 | ±0.00 | 50% exacto |
 | **200** | **-1.74** | **±17.70** | **Validación final** |
 
-**Conclusión:** Balanced es exactamente igual de fuerte que Stockfish puro.
+**Conclusión:** Balanced es igual de fuerte que Stockfish 19 original. La personalidad no cuesta nada.
 
-### Positional vs Pure
+### Positional vs Stockfish original
+
+El estilo Positional incluye 3 modos internos. Cada modo fue validado
+por separado contra Stockfish 19 original.
+
+#### Modo Dynamic (default)
 
 | Partidas | Elo | Margen | Notas |
 |----------|-----|--------|-------|
 | 20 | +17.39 | ±32.48 | Muestra inicial |
-| **200** | **+6.95** | **±14.40** | **Validación final** |
+| **200** | **+12.17** | **±12.99** | **Validación final** |
 
-**Conclusión:** Positional está a ~7 Elo de Stockfish puro. Estadísticamente indistinguible. Validado con 200 partidas.
+**Conclusión:** Dynamic está a ~12 Elo de Stockfish 19 original. Estadísticamente indistinguible.
+
+#### Modo Prophylactic
+
+| Partidas | Elo | Margen | Notas |
+|----------|-----|--------|-------|
+| **100** | **+13.90** | **±16.27** | **Validación final** |
+
+**Conclusión:** Prophylactic está a ~14 Elo de Stockfish 19 original. Estadísticamente indistinguible.
+
+#### Modo Constrictor
+
+| Partidas | Elo | Margen | Notas |
+|----------|-----|--------|-------|
+| 100 (sin calibrar) | +41.89 | ±23.07 | Muestra inicial |
+| **100 (calibrado)** | **0.00** | **±21.56** | **Validación final** |
+
+**Conclusión:** Constrictor empata exactamente con Stockfish 19 original tras calibración.
 
 ---
 
-## 🎯 Test táctico — Suite WAC (300 posiciones, depth 15)
+## Test táctico — Suite WAC (300 posiciones, depth 15)
 
 Mide precisión táctica pura. Cuenta cuántas posiciones acierta el motor.
+
 *Nota: estos tests se realizaron antes de la calibración final de los estilos. Los números son indicativos, no definitivos.*
 
-| Estilo | Escala | Aciertos | Precisión | Dif. vs Pure |
-|--------|--------|----------|-----------|--------------|
-| **Pure** | 2 | **236/300** | **78.7%** | — |
+| Estilo | Escala | Aciertos | Precisión | Dif. vs Stockfish |
+|--------|--------|----------|-----------|-------------------|
+| **Stockfish original** | — | **236/300** | **78.7%** | — |
 | **Killer** | **1** | **234/300** | **78.0%** | **-0.7%** |
 | **Killer** | **2** | **236/300** | **78.7%** | **0.0%** |
 | **Killer** | **3** | **234/300** | **78.0%** | **-0.7%** |
 
 **Interpretación:**
 
-- Killer-1 mantiene la precisión táctica casi idéntica a Stockfish puro.
-- **Killer-2 iguala EXACTAMENTE a Pure (236/300)** aunque juega con estilo agresivo.
+- Killer-1 mantiene la precisión táctica casi idéntica a Stockfish original.
+- **Killer-2 iguala EXACTAMENTE a Stockfish original (236/300)** aunque juega con estilo agresivo.
 - Este resultado sugiere que **la agresividad bien calibrada no daña la precisión táctica**.
 
 ### Observación sobre posiciones tempranas
 
-En las primeras 100 posiciones del WAC (las más accesibles), Killer-2 **superó ligeramente** a Pure:
+En las primeras 100 posiciones del WAC (las más accesibles), Killer-2 **superó ligeramente** a Stockfish original:
 
-| Posición | Pure | Killer-2 |
-|----------|------|----------|
+| Posición | Stockfish | Killer-2 |
+|----------|-----------|----------|
 | 20 | 85.0% | **90.0%** |
 | 40 | 87.5% | **87.5%** |
 | 60 | 85.0% | **86.7%** |
@@ -98,46 +127,47 @@ Esto sugiere que en posiciones tácticas claras, la agresividad puede dar un **e
 
 ---
 
-## 🔮 Rendimiento esperado por control de tiempo (hipótesis)
+## Rendimiento esperado por control de tiempo (hipótesis)
 
 Basado en la naturaleza del estilo agresivo, se espera que Killer rinda **mejor** en controles de tiempo rápidos:
 
 | Control | Predicción | Razón |
 |---------|-----------|-------|
-| Clásico (10+0.1) | Killer ≈ Pure | La NNUE domina la evaluación |
-| **Blitz (5+0.05)** | **Killer ≈ Pure** ✅ validado | Validado con 400 partidas |
-| Blitz rápido (3+0.02) | Killer > Pure (+10 a +25 Elo) | Menos profundidad, más peso del estilo |
-| Bullet (1+0.01) | Killer >> Pure (+30 a +50 Elo) | Presión de tiempo sobre el rival |
+| Clásico (10+0.1) | Killer ≈ Stockfish | La NNUE domina la evaluación |
+| **Blitz (5+0.05)** | **Killer ≈ Stockfish** ✅ validado | Validado con 400 partidas |
+| Blitz rápido (3+0.02) | Killer > Stockfish (+10 a +25 Elo) | Menos profundidad, más peso del estilo |
+| Bullet (1+0.01) | Killer >> Stockfish (+30 a +50 Elo) | Presión de tiempo sobre el rival |
 
 **Trabajo futuro:** correr matches a 3+0.02 y 1+0.01 para validar esta hipótesis.
 
 ---
 
-## 🛠️ Bug fixes importantes aplicados
+## 🛠️ Mejoras importantes aplicadas
 
-1. **Reporte UCI consistente**: el delta de estilo se aplica internamente durante la búsqueda, pero no se filtra al reporte externo. De esta forma, el search aprovecha el estilo y la GUI recibe siempre la evaluación real de la red neuronal.
-2. **Mates consistentes**: no se aplica delta de estilo cuando el score es de mate. Elimina los warnings de "Sign mismatch in mate scores".
-3. **Calibración de Killer**: reducidos los pesos ~25% para eliminar la pérdida de fuerza (de +14 Elo a +4 Elo).
+1. **Reporte UCI consistente**: el delta de estilo se aplica internamente durante la búsqueda, pero no se filtra al reporte externo. La GUI recibe siempre la evaluación real de la red neuronal.
+2. **Mates consistentes**: no se aplica delta de estilo cuando el score es de mate. Elimina inconsistencias en los reportes de mate.
+3. **Calibración de Killer**: pesos reducidos ~25% y tropismo solo positivo. Paso de +14 Elo de pérdida a +4 Elo.
+4. **Calibración de Positional**: se definieron 3 modos con pesos propios. Dynamic: clamp ±22, simplificación ×0.5, dinamismo ×1.4. Prophylactic: clamp ±15, estructura ×1.2, dinamismo ×0.75. Constrictor: clamp ±22, estructura ×0.75, menores ×1.25, dominancia ×1.5.
 
 ---
 
-## 🏗️ Arquitectura
+## Arquitectura
 
 Archivos nuevos creados por el autor:
 
 - `style.h` — declaraciones del sistema de estilos
-- `style.cpp` — implementación de los 3 estilos + Pure
+- `style.cpp` — implementación de los 3 estilos de Evolution
 
 Archivos de Stockfish modificados:
 
 - `search.cpp` — inyección del delta de estilo + fix de reporte UCI
-- `engine.cpp` — registro de opciones UCI `Style` y `TacticalScale`
+- `engine.cpp` — registro de opciones UCI `Style`, `KillerScale` y `PositionalMode`
 - `misc.cpp` — banner personalizado
 - `Makefile` — inclusión de `style.cpp` en la compilación
 
 ---
 
-## 📅 Historial de desarrollo
+## Historial de desarrollo
 
 | Fecha | Hito |
 |-------|------|
@@ -148,12 +178,14 @@ Archivos de Stockfish modificados:
 | Oct 2026 | Fix de consistencia en el reporte UCI |
 | Oct 2026 | Fix de mates inconsistentes |
 | Oct 2026 | Calibración de Killer suave |
-| Oct 2026 | Implementación de TacticalScale |
+| Oct 2026 | Implementación de KillerScale |
 | Oct 2026 | Validación con 400 partidas |
-| Oct 2026 | Test táctico WAC (Pure, K-1, K-2, K-3) |
+| Oct 2026 | Test táctico WAC (Stockfish, K-1, K-2, K-3) |
 | Oct 2026 | Recalibración de Positional (dinamismo + dominancia de casillas) |
-| Oct 2026 | Ajuste de clamp de Positional (±50 → ±25) |
-| Oct 2026 | Validación final: Killer 400, Balanced 200, Positional 200 |
+| Oct 2026 | Implementación de PositionalMode (Dynamic, Prophylactic, Constrictor) |
+| Oct 2026 | Calibración de los 3 modos posicionales |
+| Oct 2026 | Validación final: Killer 400, Balanced 200, Positional 400 (3 modos) |
+| Oct 2026 | Compilación final con PGO (Profile-Guided Optimization) |
 | Oct 2026 | Cierre de la versión 1.0 |
 
 ---

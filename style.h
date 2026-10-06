@@ -32,9 +32,16 @@ enum class StyleType {
     Killer,      // Tactico, agresivo, tropismo hacia el rey enemigo
     Balanced,    // Equilibrado (default)
     Positional,  // Estrategico, estructura, control posicional
-    Pure         // Sin delta (identico a Stockfish original)
 };
 
+
+// Los tres modos del estilo Positional.
+enum class PositionalMode {
+    Prophylactic,  // Previene las ideas del rival
+    Dynamic,       // Acumula ventajas y actividad (default)
+
+    Constrictor,   // Presiona y restringe al rival
+};
 // Devuelve el estilo actualmente seleccionado (leido de la opcion UCI "Style").
 StyleType current_style();
 
@@ -42,7 +49,10 @@ StyleType current_style();
 void set_style_from_string(const std::string& s);
 
 // Ajusta la escala tactica de Killer (1=suave, 2=medio, 3=agresivo).
-void set_tactical_scale(int s);
+void set_killer_scale(int s);
+
+// Ajusta el modo del estilo Positional (Prophylactic, Dynamic, Constrictor).
+void set_positional_mode(const std::string& s);
 
 // Calcula el delta de estilo que se sumara al score de la NNUE.
 // Devuelve centipeones (cp). Positivo = bueno para el lado a mover.

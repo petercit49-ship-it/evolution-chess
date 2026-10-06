@@ -106,13 +106,17 @@ Engine::Engine(std::optional<std::filesystem::path> path) :
       "MultiPV", Option(1, 1, MAX_MOVES));
 
     options.add("Skill Level", Option(20, 0, 20));
-    options.add("Style", Option("Balanced", [](const Option& o) {
+    options.add("Style", Option("Killer Balanced Positional", "Balanced", [](const Option& o) {
         Style::set_style_from_string(o);
         return std::nullopt;
     }));
 
-    options.add("TacticalScale", Option(2, 1, 3, [](const Option& o) {
-        Style::set_tactical_scale(o);
+    options.add("KillerScale", Option(2, 1, 3, [](const Option& o) {
+        Style::set_killer_scale(o);
+        return std::nullopt;
+    }));
+    options.add("PositionalMode", Option("Prophylactic Dynamic Constrictor", "Dynamic", [](const Option& o) {
+        Style::set_positional_mode(o);
         return std::nullopt;
     }));
 

@@ -18,7 +18,6 @@ Los estilos son:
 - **Killer** - Agresivo, tactico, con tropismo al rey enemigo.
 - **Balanced** - Equilibrado, con personalidad sutil propia (default).
 - **Positional** - Estrategico, posicional-dinamico, no materialista.
-- **Pure** - Sin estilo. Comportamiento identico a Stockfish 19 original.
 
 ---
 
@@ -37,32 +36,42 @@ Los estilos son:
     setoption name Style value Killer
     setoption name Style value Balanced
     setoption name Style value Positional
-    setoption name Style value Pure
 
 ### Escala tactica de Killer
 
-La opcion TacticalScale modula la agresividad del estilo Killer.
+La opcion KillerScale modula la agresividad del estilo Killer.
 Aparece inmediatamente debajo de Style en el listado UCI para
 reflejar su asociacion. NO tiene efecto en otros estilos.
 
-    setoption name TacticalScale value 1   -> Killer light
-    setoption name TacticalScale value 2   -> Killer medio (default)
-    setoption name TacticalScale value 3   -> Killer berserker
+    setoption name KillerScale value 1   -> Killer light
+    setoption name KillerScale value 2   -> Killer medio (default)
+    setoption name KillerScale value 3   -> Killer berserker
+### Modo del estilo Positional
+
+La opcion PositionalMode elige entre los 3 modos del estilo Positional.
+Aparece inmediatamente debajo de KillerScale en el listado UCI.
+NO tiene efecto en otros estilos.
+
+    setoption name PositionalMode value Dynamic       -> Modo default
+    setoption name PositionalMode value Prophylactic  -> Modo profilactico
+    setoption name PositionalMode value Constrictor   -> Modo constrictor
 
 ---
 
 ## Rendimiento validado
 
-Cada estilo fue validado con cientos de partidas contra Stockfish 19
-puro (Style=Pure) usando el mismo binario y tiempo controlado:
+Cada estilo fue validado con cientos de partidas
+contra Stockfish 19 original, usando el mismo binario y tiempo controlado:
 
-| Estilo      | Partidas | Elo vs Pure |
+| Estilo      | Partidas | Elo vs Stockfish |
 |-------------|----------|-------------|
 | Killer      | 400      | +4.34       |
 | Balanced    | 200      | -1.74       |
-| Positional  | 200      | +6.95       |
+| Positional - Dynamic       | 200      | +12.17      |
+| Positional - Prophylactic  | 100      | +13.90      |
+| Positional - Constrictor   | 100      | 0.00        |
 
-Conclusion: los tres estilos estan a menos de 7 Elo de diferencia
+Conclusion: todos los estilos y modos estan a menos de 14 Elo de diferencia
 respecto a Stockfish 19 original. Ninguno pierde fuerza significativa.
 
 Ver STATS.md para el analisis completo.
@@ -72,7 +81,8 @@ Ver STATS.md para el analisis completo.
 ## Novedades respecto a Stockfish 19
 
 - Sistema de estilos configurable (Style).
-- Escala tactica ajustable (TacticalScale, solo para Killer).
+- Escala tactica ajustable (KillerScale, solo para Killer).
+- Modo posicional configurable (PositionalMode, solo para Positional).
 - Reporte UCI consistente: el delta de estilo se aplica internamente
   durante la busqueda pero no se filtra al reporte externo.
 - Fix de consistencia de mates: no se aplica delta a scores de mate.

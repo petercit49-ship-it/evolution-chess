@@ -14,11 +14,14 @@ Primera version publica de Evolution.
   - Killer: estilo agresivo con tropismo al rey enemigo.
   - Balanced: estilo equilibrado con personalidad sutil (default).
   - Positional: estilo estrategico, posicional-dinamico, no materialista.
-  - Pure: sin estilo, comportamiento identico a Stockfish 19.
 
-- Escala tactica ajustable (opcion UCI TacticalScale, 1-3):
+- Escala tactica ajustable (opcion UCI KillerScale, 1-3):
   - Solo se aplica al estilo Killer.
   - 1 = Killer light, 2 = Killer medio (default), 3 = Killer berserker.
+- Modo posicional configurable (opcion UCI PositionalMode, solo para Positional):
+  - Dynamic: modo equilibrado con personalidad propia (default).
+  - Prophylactic: modo preventivo y solido, neutraliza las ideas del rival.
+  - Constrictor: modo de presion sostenida y restriccion progresiva.
 
 - Componentes de estilo nuevos en style.cpp:
   - Killer: tropismo al rey, ataques al king ring, castigo por pasividad.
@@ -49,27 +52,30 @@ Primera version publica de Evolution.
   para eliminar la perdida de fuerza. Paso de +14 Elo de perdida a
   +4 Elo (estadisticamente indistinguible de Stockfish puro).
 
-- Calibracion de Positional: clamp ajustado de +/-50 a +/-25.
-  Paso de +28 Elo de perdida a +7 Elo (indistinguible de Stockfish).
-  El clamp +/-50 permitia que el estilo dominara decisiones criticas;
-  con +/-25 el estilo matiza sin destruir la evaluacion de la NNUE.
+- Calibracion de Positional: se definieron 3 modos con pesos propios.
+  Dynamic: clamp +/-22, simplificacion x0.5, dinamismo x1.4.
+  Prophylactic: clamp +/-15, estructura x1.2, dinamismo x0.75.
+  Constrictor: clamp +/-22, estructura x0.75, menores x1.25,
+  dominancia x1.5. Cada modo con su propia funcion independiente.
 
 ### Validacion
 
 - Killer: 400 partidas contra Stockfish 19 puro. Resultado: +4.34 Elo.
 - Balanced: 200 partidas contra Stockfish 19 puro. Resultado: -1.74 Elo.
-- Positional: 200 partidas contra Stockfish 19 puro. Resultado: +6.95 Elo.
+- Positional - Dynamic: 200 partidas. Resultado: +12.17 Elo.
+- Positional - Prophylactic: 100 partidas. Resultado: +13.90 Elo.
+- Positional - Constrictor: 100 partidas. Resultado: 0.00 Elo.
 - Test tactico WAC (300 posiciones): realizado con version pre-calibracion.
 
-Los tres estilos estan a menos de 7 Elo de Stockfish 19 original.
+Todos los estilos y modos estan a menos de 14 Elo de Stockfish 19 original.
 Ver STATS.md para el analisis completo.
 
 ### Arquitectura
 
 - style.h: declaraciones del sistema de estilos.
-- style.cpp: implementacion de los 3 estilos + Pure.
+- style.cpp: implementacion de los 3 estilos de Evolution.
 - search.cpp: inyeccion del delta de estilo y fix de reporte UCI.
-- engine.cpp: registro de opciones UCI Style y TacticalScale.
+- engine.cpp: registro de opciones UCI Style, KillerScale y PositionalMode.
 - misc.cpp: banner personalizado.
 - Makefile: inclusion de style.cpp en la compilacion.
 

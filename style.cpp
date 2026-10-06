@@ -31,7 +31,8 @@ namespace Stockfish {
 namespace Style {
 
 static StyleType g_current_style = StyleType::Balanced;
-static int        g_tactical_scale = 2;
+static int        g_killer_scale = 2;
+static PositionalMode g_positional_mode = PositionalMode::Dynamic;
 
 StyleType current_style() { return g_current_style; }
 
@@ -40,13 +41,20 @@ void set_style_from_string(const std::string& s) {
         g_current_style = StyleType::Killer;
     else if (s == "Positional")
         g_current_style = StyleType::Positional;
-    else if (s == "Pure")
-        g_current_style = StyleType::Pure;
     else
         g_current_style = StyleType::Balanced;
 }
 
-void set_tactical_scale(int s) { g_tactical_scale = std::clamp(s, 1, 3); }
+void set_killer_scale(int s) { g_killer_scale = std::clamp(s, 1, 3); }
+
+void set_positional_mode(const std::string& s) {
+    if (s == "Prophylactic")
+        g_positional_mode = PositionalMode::Prophylactic;
+    else if (s == "Constrictor")
+        g_positional_mode = PositionalMode::Constrictor;
+    else
+        g_positional_mode = PositionalMode::Dynamic;
+}
 // =============================================================
 // Utilidades comunes
 // =============================================================
@@ -133,7 +141,7 @@ static int killer_delta(const Position& pos) {
         delta -= 6;
 
     delta = std::clamp(delta, -15, 60);
-    return (delta * g_tactical_scale) / 2;
+    return (delta * g_killer_scale) / 2;
 }
 
 // =============================================================
@@ -235,7 +243,7 @@ static int simplification_score(Color c, const Position& pos) {
     const int diff    = matUs - matThem;
 
     // Si no tenemos ventaja material clara, no premiamos simplificar
-    if (diff < 400)
+    if (diff < 150)
         return 0;
 
     // Si el rey rival esta expuesto, NO simplificamos (mantenemos ataque)
@@ -294,19 +302,82 @@ static int square_dominance_score(Color c, const Position& pos) {
     }
     return score;
 }
+// =============================================================
+// POSITIONAL: tres modos con funciones independientes.
+// Cada modo tiene su propio codigo, sin compartir helpers.
+// =============================================================
 
-static int positional_delta(const Position& pos) {
+// DYNAMIC (default): equilibrado, todos los pesos a 1.0. Clamp +/-25.
+static int dynamic_positional_delta(const Position& pos) {
     const Color us   = pos.side_to_move();
     const Color them = ~us;
 
-    int delta = 0;
-    delta += pawn_structure_score(us, pos) - pawn_structure_score(them, pos);
-    delta += minor_balance_score(us, pos) - minor_balance_score(them, pos);
-    delta += simplification_score(us, pos) - simplification_score(them, pos);
-    delta += dynamics_score(us, pos) - dynamics_score(them, pos);
-    delta += square_dominance_score(us, pos) - square_dominance_score(them, pos);
+    const int structure      = pawn_structure_score(us, pos) - pawn_structure_score(them, pos);
+    const int minors         = minor_balance_score(us, pos) - minor_balance_score(them, pos);
+    const int simplification = simplification_score(us, pos) - simplification_score(them, pos);
+    const int dynamics       = dynamics_score(us, pos) - dynamics_score(them, pos);
+    const int dominance      = square_dominance_score(us, pos) - square_dominance_score(them, pos);
+    int delta = structure
+              + minors
+              + (simplification * 1 / 2)
+              + (dynamics * 7 / 5)
+              + dominance;
 
-    return std::clamp(delta, -25, 25);
+    return std::clamp(delta, -22, 22);
+}
+
+// PROPHYLACTIC: previene las ideas del rival. Solido, neutralizador.
+// Structure x1.2, Dynamics x0.75, resto x1.0. Clamp +/-15.
+static int prophylactic_positional_delta(const Position& pos) {
+    const Color us   = pos.side_to_move();
+    const Color them = ~us;
+
+    const int structure      = pawn_structure_score(us, pos) - pawn_structure_score(them, pos);
+    const int minors         = minor_balance_score(us, pos) - minor_balance_score(them, pos);
+    const int simplification = simplification_score(us, pos) - simplification_score(them, pos);
+    const int dynamics       = dynamics_score(us, pos) - dynamics_score(them, pos);
+    const int dominance      = square_dominance_score(us, pos) - square_dominance_score(them, pos);
+
+    int delta = (structure * 6 / 5)
+              + minors
+              + simplification
+              + (dynamics * 3 / 4)
+              + dominance;
+
+    return std::clamp(delta, -15, 15);
+}
+
+// CONSTRICTOR: presiona y restringe al rival.
+// Structure x0.75, Minors x1.25, Simplification x0.5, Dominance x1.5. Clamp +/-22.
+static int constrictor_positional_delta(const Position& pos) {
+    const Color us   = pos.side_to_move();
+    const Color them = ~us;
+
+    const int structure      = pawn_structure_score(us, pos) - pawn_structure_score(them, pos);
+    const int minors         = minor_balance_score(us, pos) - minor_balance_score(them, pos);
+    const int simplification = simplification_score(us, pos) - simplification_score(them, pos);
+    const int dynamics       = dynamics_score(us, pos) - dynamics_score(them, pos);
+    const int dominance      = square_dominance_score(us, pos) - square_dominance_score(them, pos);
+
+    int delta = (structure * 3 / 4)
+              + (minors * 5 / 4)
+              + (simplification * 1 / 2)
+              + dynamics
+              + (dominance * 3 / 2);
+
+    return std::clamp(delta, -22, 22);
+}
+
+// Dispatcher: elige el modo posicional segun la opcion UCI PositionalMode.
+static int positional_delta(const Position& pos) {
+    switch (g_positional_mode) {
+    case PositionalMode::Prophylactic:
+        return prophylactic_positional_delta(pos);
+    case PositionalMode::Constrictor:
+        return constrictor_positional_delta(pos);
+    default:
+        return dynamic_positional_delta(pos);
+    }
 }
 
 // =============================================================
@@ -453,7 +524,6 @@ int style_delta(const Position& pos) {
         return positional_delta(pos);
     case StyleType::Balanced:
         return balanced_delta(pos);
-    case StyleType::Pure:
     default:
         return 0;
     }

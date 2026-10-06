@@ -1,10 +1,13 @@
 # Binarios de compilacion
 *.o
+*.exe
+!release/*.exe
 stockfish.exe
 
 # Backups
 *.bak
 *.bak*
+*.actual_pos
 
 # Logs y resultados de matches
 *.log
@@ -12,8 +15,11 @@ stockfish.exe
 
 # Herramientas y datasets de terceros
 fastchess.exe
+fastchess.zip
 wacnew.epd
 book.epd
+test_tactico.sh
+test_tactico.sh.bak
 
 # Redes neuronales (excepto la que esta en release/)
 *.nnue
@@ -26,7 +32,10 @@ book.epd
 .depend
 config.json
 
-# Herramientas temporales
-fastchess.zip
-style.cpp.actual_pos
-test_tactico.sh
+# Binarios auxiliares de prueba
+evolution_native.exe
+evolution_native_v2.exe
+evolution_old_pgo.exe
+stockfish-original.exe
+stockfish_backup_no_pgo.exe
+stockfish_gcc_o3.exe.bak
