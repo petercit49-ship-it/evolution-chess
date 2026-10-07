@@ -1,100 +1,128 @@
 # Evolution 1.0
 
-**Autor:** Pedro Bernabe Moreno Maura
+**Autor:** Pedro Bernabé Moreno Maura
 **Basado en:** Stockfish 19
 **Licencia:** GPLv3
 
 ---
 
-## Que es Evolution?
+## ¿Qué es Evolution?
 
-Evolution es un motor de ajedrez derivado de Stockfish 19 que anade
+Evolution es un motor de ajedrez derivado de Stockfish 19 que añade
 tres estilos de juego configurables sin perder fuerza respecto al
 motor original. Cada estilo tiene una personalidad propia, calibrada
-con cientos de partidas de validacion.
+con cientos de partidas de validación.
 
 Los estilos son:
 
-- **Killer** - Agresivo, tactico, con tropismo al rey enemigo.
+- **Killer** - Agresivo, táctico, con tropismo al rey enemigo.
 - **Balanced** - Equilibrado, con personalidad sutil propia (default).
-- **Positional** - Estrategico, posicional-dinamico, no materialista.
+- **Positional** - Estratégico, posicional-dinámico, no materialista.
+  - Modo **Dynamic** - Equilibrado con personalidad propia (default).
+  - Modo **Prophylactic** - Preventivo y sólido, neutraliza al rival.
+  - Modo **Constrictor** - Presión sostenida y restricción progresiva.
 
 ---
 
-## Instalacion
+## ¿Qué versión descargar?
 
-1. Copia Evolution.exe y nn-1a298aa575a0.nnue en la misma carpeta.
-2. Abrelo desde tu GUI de ajedrez (Arena, CuteChess, Fritz, etc.) como motor UCI.
-3. Listo. La red neuronal se carga automaticamente.
+Evolution se distribuye en 5 compilaciones, cada una optimizada para
+un tipo de CPU distinto. Elige la que mejor se ajuste a tu procesador:
+
+| CPU | Compilación a usar |
+|-----|--------------------|
+| Intel 2017+ / AMD Zen 4+ | Evolution 1.0-avx512.exe |
+| Intel 2013+ / AMD Zen+ | Evolution 1.0-bmi2.exe |
+| Intel 2013+ / AMD 2015+ | Evolution 1.0-avx2.exe |
+| Intel 2008+ / AMD 2011+ | Evolution 1.0-sse41-popcnt.exe |
+| Muy antigua o desconocida | Evolution 1.0-x86-64.exe |
+
+**Si no estás seguro, usa Evolution 1.0-avx2.exe.** Funciona en la
+gran mayoría de PCs modernos (Intel desde 2013, AMD desde 2015).
+
+**Importante:** siempre debe estar el archivo nn-1a298aa575a0.nnue
+en la misma carpeta que el .exe. Sin él, el motor no arranca.
+
+---
+
+## Instalación
+
+1. Copia el .exe que hayas elegido (según tu CPU) y el archivo
+   nn-1a298aa575a0.nnue en la misma carpeta.
+2. Ábrelo desde tu GUI de ajedrez (Arena, CuteChess, Fritz, ChessBase,
+   BanksiaGUI, etc.) como motor UCI.
+3. Listo. La red neuronal se carga automáticamente.
 
 ---
 
 ## Uso
 
-### Seleccion de estilo
+### Selección de estilo
 
-    setoption name Style value Killer
-    setoption name Style value Balanced
-    setoption name Style value Positional
+setoption name Style value Killer
+setoption name Style value Balanced
+setoption name Style value Positional
 
-### Escala tactica de Killer
+### Escala táctica de Killer
 
-La opcion KillerScale modula la agresividad del estilo Killer.
+La opción KillerScale modula la agresividad del estilo Killer.
 Aparece inmediatamente debajo de Style en el listado UCI para
-reflejar su asociacion. NO tiene efecto en otros estilos.
+reflejar su asociación. NO tiene efecto en otros estilos.
 
-    setoption name KillerScale value 1   -> Killer light
-    setoption name KillerScale value 2   -> Killer medio (default)
-    setoption name KillerScale value 3   -> Killer berserker
+setoption name KillerScale value 1   -> Killer light
+setoption name KillerScale value 2   -> Killer medio (default)
+setoption name KillerScale value 3   -> Killer berserker
+
 ### Modo del estilo Positional
 
-La opcion PositionalMode elige entre los 3 modos del estilo Positional.
-Aparece inmediatamente debajo de KillerScale en el listado UCI.
-NO tiene efecto en otros estilos.
+La opción PositionalMode elige entre los 3 modos del estilo
+Positional. Aparece inmediatamente debajo de KillerScale en el
+listado UCI. NO tiene efecto en otros estilos.
 
-    setoption name PositionalMode value Dynamic       -> Modo default
-    setoption name PositionalMode value Prophylactic  -> Modo profilactico
-    setoption name PositionalMode value Constrictor   -> Modo constrictor
+setoption name PositionalMode value Dynamic       -> Modo default
+setoption name PositionalMode value Prophylactic  -> Modo profiláctico
+setoption name PositionalMode value Constrictor   -> Modo constrictor
 
 ---
 
 ## Rendimiento validado
 
-Cada estilo fue validado con cientos de partidas
-contra Stockfish 19 original, usando el mismo binario y tiempo controlado:
+Cada estilo fue validado con cientos de partidas contra Stockfish 19
+original, usando el mismo binario y tiempo controlado:
 
-| Estilo      | Partidas | Elo vs Stockfish |
-|-------------|----------|-------------|
-| Killer      | 400      | +4.34       |
-| Balanced    | 200      | -1.74       |
-| Positional - Dynamic       | 200      | +12.17      |
-| Positional - Prophylactic  | 100      | +13.90      |
-| Positional - Constrictor   | 100      | 0.00        |
+| Estilo y modo              | Partidas | Elo vs Stockfish |
+|----------------------------|----------|-------------------|
+| Killer                     | 400      | +4.34             |
+| Balanced                   | 200      | -1.74             |
+| Positional - Dynamic       | 200      | +12.17            |
+| Positional - Prophylactic  | 100      | +13.90            |
+| Positional - Constrictor   | 100      | 0.00              |
 
-Conclusion: todos los estilos y modos estan a menos de 14 Elo de diferencia
-respecto a Stockfish 19 original. Ninguno pierde fuerza significativa.
+**Conclusión:** todos los estilos y modos están a menos de 14 Elo de
+diferencia respecto a Stockfish 19 original. Ninguno pierde fuerza
+significativa.
 
-Ver STATS.md para el analisis completo.
+Ver STATS.md para el análisis completo.
 
 ---
 
 ## Novedades respecto a Stockfish 19
 
 - Sistema de estilos configurable (Style).
-- Escala tactica ajustable (KillerScale, solo para Killer).
+- Escala táctica ajustable (KillerScale, solo para Killer).
 - Modo posicional configurable (PositionalMode, solo para Positional).
 - Reporte UCI consistente: el delta de estilo se aplica internamente
-  durante la busqueda pero no se filtra al reporte externo.
+  durante la búsqueda pero no se filtra al reporte externo.
 - Fix de consistencia de mates: no se aplica delta a scores de mate.
-- Arquitectura limpia: codigo de estilo aislado en style.h y style.cpp.
+- Arquitectura limpia: código de estilo aislado en style.h y style.cpp.
 
 ---
 
-## Creditos
+## Créditos
 
-Evolution 1.0 es obra de Pedro Bernabe Moreno Maura.
+Evolution 1.0 es obra de Pedro Bernabé Moreno Maura.
 
-Esta basado en Stockfish 19, cuyo equipo original de desarrolladores
+Está basado en Stockfish 19, cuyo equipo original de desarrolladores
 mantiene el motor de referencia mundial. Ver AUTHORS para la lista
 completa de contribuidores originales.
 
